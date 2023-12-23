@@ -1,0 +1,280 @@
+import sys
+
+def BlackJack():
+
+  from numpy import random
+
+
+  game_status = 'undecided'
+
+  def card_chooser():
+    """Generates random card values from 2 to 'ace'"""
+    return random.choice([2,3,4,5,6,7,8,9,10,'ace'], p=[(4/52),(4/52),(4/52),(4/52),(4/52),(4/52),(4/52),(4/52),(16/52),(4/52)])
+
+  p1_cardvalue1 = card_chooser()
+  p1_cardvalue2 = card_chooser()
+
+  d_cardvalue1 = card_chooser()
+  d_cardvalue2 = card_chooser()
+
+  print (f'Here is dealers first card: {d_cardvalue1}, other card is face down.')
+
+  #If dealer gets ace this code will decide the value of the ace.
+  while d_cardvalue1 == 'ace':
+    if int(d_cardvalue2) + 11 > 21:
+      d_cardvalue1 = 1
+    else:
+      d_cardvalue1 = 11
+
+  while d_cardvalue2 == 'ace':
+    if int(d_cardvalue1) + 11 > 21 :
+      d_cardvalue2 = 1
+    else:
+      d_cardvalue2 = 11
+
+  #If user gets ace prompt user for the value of ace they want.
+  while p1_cardvalue1 == 'ace':
+    print(f"Your first card is an ace and your second card is {p1_cardvalue2}.")
+    chosen_value = input("Would you like your ace to be a 1 or 11?")
+
+    if chosen_value == '1':
+      p1_cardvalue1 = 1
+
+    elif chosen_value == '11':
+      p1_cardvalue1 = 11
+
+    else:
+      print('Invalid response please try again.')
+
+  while p1_cardvalue2 == 'ace':
+    print(f"Your second card is an ace and your first card is {p1_cardvalue1}.")
+    chosen_value = input("Would you like your ace to be a 1 or 11?")
+
+    if chosen_value == '1':
+      p1_cardvalue2 = 1
+
+    elif chosen_value == '11':
+      p1_cardvalue2 = 11
+
+    else:
+      print('Invalid response please try again.')
+
+  p1_totalcardvalue = int(p1_cardvalue1) + int(p1_cardvalue2)
+
+  #This loop allows the user to hit or stand based on their input and changes the game status based on the outcome.
+  while game_status == 'undecided':
+
+    if p1_totalcardvalue > 21:
+      game_status = 'lost'
+      p1_endvalue = p1_totalcardvalue
+
+      print(f"Player 1 Bust: {p1_endvalue} so you {game_status}!")
+
+    elif p1_totalcardvalue == 21:
+      game_status = 'won'
+      p1_endvalue = p1_totalcardvalue
+
+      print(f"Player 1 Blackjack: {p1_endvalue} so you {game_status}!")
+
+    elif p1_totalcardvalue < 21:
+      users_decision = input(f"Your current card value = {p1_totalcardvalue}. Hit or stand?")
+
+      if users_decision.lower() == 'hit':
+        p1_drawn_card = (card_chooser())
+
+        if p1_drawn_card == 'ace':
+          p1_drawn_card = int(input("Would you like your ace to be a 1 or 11?"))
+          p1_totalcardvalue = int(p1_totalcardvalue) + int(p1_drawn_card)
+
+        else:
+          print(f"You drew a {p1_drawn_card}")
+          p1_totalcardvalue += int(p1_drawn_card)
+
+      elif users_decision.lower() == 'stand':
+        p1_endvalue = p1_totalcardvalue
+        break
+
+      else:
+        print("Invalid response please try again.")
+
+  #Gets a final value for the dealers hand based on the rules of blackjack and updates game status based on what happens.
+  d_totalcardvalue = int(d_cardvalue1) + int(d_cardvalue2)
+  while game_status == 'undecided':
+    if d_totalcardvalue > 21:
+      game_status = 'won'
+      d_endcardvalue = d_totalcardvalue
+
+      print(f"Dealer Bust: {d_endcardvalue} so you {game_status}!")
+
+    elif d_totalcardvalue == 21:
+      game_status = 'lost'
+      d_endcardvalue = d_totalcardvalue
+
+      print(f"Dealer Blackjack: {d_endcardvalue} so you {game_status}!")
+
+    elif d_totalcardvalue < 17:
+      d_drawn_card = card_chooser()
+      while d_drawn_card == 'ace':
+
+        if (d_totalcardvalue + 11) <= 21:
+          d_drawn_card = 11
+          d_totalcardvalue += d_drawn_card
+
+        elif (d_totalcardvalue + 11) > 21:
+          d_drawn_card = 1
+          d_totalcardvalue += d_drawn_card
+
+      else:
+        d_totalcardvalue += int(d_drawn_card)
+
+    else:
+      d_endcardvalue = d_totalcardvalue
+      break
+
+  #Compares the user and the dealers final card values to determine who wins.
+  while game_status == 'undecided':
+    if d_endcardvalue > p1_endvalue:
+      game_status = 'lost'
+      print(f"Your Value:{p1_endvalue} , Dealers Value: {d_endcardvalue} so you {game_status}!")
+
+    elif d_endcardvalue < p1_endvalue:
+      game_status = 'won'
+      print(f"Your Value:{p1_endvalue} , Dealers Value: {d_endcardvalue} so you {game_status}!")
+    else:
+      game_status = 'pushed'
+      print(f"Your Value:{p1_endvalue} , Dealers Value: {d_endcardvalue} so you {game_status}!")
+
+  blackjack_hub.game_status = game_status
+
+#Class for the game that holds the features used
+class BlackJackHub:
+    def __init__(self, username, balance=100, times_played=0, game_status = 'undecided'):
+        self.__balance = balance
+        self.__username = username
+        self.__times_played = times_played
+
+    @property
+    def balance(self):
+        return self.__balance
+
+    @property
+    def username(self):
+        return self.__username
+
+    @property
+    def times_played(self):
+        return self.__times_played
+
+    @username.setter
+    def username(self, new_username):
+        self.__username = new_username
+
+    def add_balance(self, amount):
+        self.__balance += amount
+
+    def subtract_balance(self,amount):
+      self.__balance -= amount
+
+    def increment_times_played(self):
+        self.__times_played += 1
+
+    def play_blackjack(self):
+        blackjack_game = BlackJack()
+
+program = "in use"
+account = 'dne'
+
+while account == 'dne':
+    username = input("Create Username\nUsername: ")
+    blackjack_hub = BlackJackHub(username)
+    account_user = blackjack_hub.username
+    print(f"Username created for user: {account_user}")
+    account = 'made'
+    break
+
+if account == 'made':
+  while program == "in use":
+    user_choice = input("\nOptions:\n"
+    "1)Play BlackJack\n"
+    "2)Deposit Money to Balance\n"
+    "3)Withdraw Money from Balance\n"
+    "4)Check amount of times played\n"
+    '5)View Balance\n'
+    "6)Exit Program\n\n" )
+
+
+    if user_choice == '6':
+      print("Thank you for playing! End of Program.")
+    #when 6 is pressed it appears like an error happens but it is just exiting the program due to usingnsys.exit() , this is not actually an error and is completely intended.
+      sys.exit()
+
+    #Holds all of the features in a menu so the user can decide what option they want to use.
+    while user_choice != 6:
+
+      if user_choice == '1':
+        bet = True
+        if bet:
+          try:
+            bet_amnt = int(input("\nHow much would you like to bet?\n"))
+
+            if (blackjack_hub.balance - bet_amnt) >= 0:
+              blackjack_hub.play_blackjack()
+              blackjack_hub.increment_times_played()
+
+              if blackjack_hub.game_status == 'won':
+                blackjack_hub.add_balance(bet_amnt)
+                break
+
+              elif blackjack_hub.game_status == 'lost':
+                blackjack_hub.subtract_balance(bet_amnt)
+                break
+
+              elif blackjack_hub.game_status == 'pushed':
+                break
+
+            else:
+              print("\nBalance too low, deposit more to play.")
+              break
+
+          except ValueError:
+            print("\nInvalid bet amount try again.")
+
+      elif user_choice == '2':
+        try:
+          deposit_amnt = int(input("\nHow much do you want to deposit?"))
+          if deposit_amnt < 0:
+            print ("\nPlease enter a postive interger to deposit.")
+          else:
+            blackjack_hub.add_balance(deposit_amnt)
+          break
+        except ValueError:
+          print("\nInvalid deposit try again.")
+
+      elif user_choice == '3':
+        try:
+          withdraw_amnt = int(input("\nHow much do you want to withdraw?"))
+          if withdraw_amnt < 0:
+            print ("\nPlease enter a postive interger to withdrawl.")
+          elif (blackjack_hub.balance - withdraw_amnt) < 0:
+            print ("\nYou can't withdraw more than is in your balance. Please Try again.")
+          else:
+            blackjack_hub.subtract_balance(withdraw_amnt)
+          break
+        except ValueError:
+          print("\nInvalid withdrawl try again.")
+
+      elif user_choice == '4':
+
+        if blackjack_hub.times_played == 1:
+          print(f"\nYou have played {blackjack_hub.times_played} time!")
+        else:
+          print(f"\nYou have played {blackjack_hub.times_played} times!")
+        break
+
+      elif user_choice == '5':
+        print(f"\nYou have ${blackjack_hub.balance}.")
+        break
+
+      else:
+        print("\nInvalid response, please enter a number 1-6: ")
+        break
